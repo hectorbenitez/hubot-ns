@@ -2,8 +2,8 @@
   "name": "bot",
   "version": "0.0.0",
   "private": true,
-  "author": "Luis Montealegre",
-  "description": "An awesome bot made for a great place to work",
+  "author": "Luis",
+  "description": "Test",
   "dependencies": {
     "hubot": "^2.13.2",
     "hubot-diagnostics": "0.0.1",
@@ -16,7 +16,8 @@
     "hubot-redis-brain": "0.0.3",
     "hubot-rules": "^0.1.1",
     "hubot-scripts": "^2.16.1",
-    "hubot-shipit": "^0.2.0"
+    "hubot-shipit": "^0.2.0",
+    "hubot-slack": "^3.3.0"
   },
   "engines": {
     "node": "0.10.x"
