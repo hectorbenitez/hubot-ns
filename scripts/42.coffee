@@ -9,12 +9,12 @@ module.exports = (robot) ->
       res.send "#{answer}, pero cual es la pregunta?"
       return
 
-    robot.hear /bot ns help/i, (msg) ->
+    robot.hear /bot help -ns/i, (msg) ->
       help = "Comandos: \n"
-      help += "\t quienes chambean en nearsoft - Una lista de la gente parte del equipo de Nearsoft\n"
-      help += "\t quienes estan en <nombre_del_equipo> - Una lista del equipo \n"
-      help += "\t cuentame acerca de <nombre> <apellido_paterno> - Una historia large sobre la persona que buscaste \n"
-      help += "\t busca <lo_que_quieras_encontrar> - Encuentra personas por su mail, nombre, apellido, etc \n"
+      help += "\t *quienes chambean en nearsoft - Una lista de la gente parte del equipo de Nearsoft\n"
+      help += "\t *quienes estan en <nombre_del_equipo> - Una lista del equipo \n"
+      help += "\t *cuentame acerca de <nombre> <apellido_paterno> - Una historia large sobre la persona que buscaste \n"
+      help += "\t *busca <lo_que_quieras_encontrar> - Encuentra personas por su mail, nombre, apellido, etc \n"
       msg.send help
 
     robot.respond /quienes chambean en nearsoft/i, (msg) ->
@@ -32,11 +32,11 @@ module.exports = (robot) ->
                 people = JSON.parse(body)
 
                 message = for index, person of people
-                  "#{person.name} #{person.lastName} \n"
-                msg.send message
-                return
+                  "#{person.name} #{person.lastName}"
 
-    robot.respond /quienes estan en {.*}/i, (msg) ->
+                msg.send message
+
+    robot.respond /quienes estan en (.*)/i, (msg) ->
         team = msg.match[1]
 
         msg.http("#{host}/api/team/#{team}")
@@ -57,7 +57,6 @@ module.exports = (robot) ->
                 message = for index, person of people
                   "#{person.name} #{person.lastname} \n"
                 msg.send message
-                return
 
     robot.respond /cuentame acerca de (.*)/i, (msg) ->
         person = msg.match[1]
@@ -93,11 +92,10 @@ module.exports = (robot) ->
                   when "Developer" then message += "Le gusta hechar codigo en la frescas mañanas de #{location}."
                   when "IT Support" then message += "Atraer la atencion negandole cosas a la gente de Nearsoft."
                   when "Intern" then message += "Le gusta que le digan Intern. ¯\\_(ツ)_/¯"
-                  when persona.role.test("Test") then  message += "Prueba en las mañanas, tardes y ocasionalmente en las noches."
+                  when persona.role.indexOf("Tester") > -1 then  message += "Prueba en las mañanas, tardes y ocasionalmente en las noches."
                   else  message += "Salvar el mundo en sus tiempos libros y tomar cafe."
 
                 msg.send message
-                return
 
     robot.respond /busca (.*)/i, (msg) ->
         searchTerm = msg.match[1]
@@ -121,4 +119,3 @@ module.exports = (robot) ->
                   return
 
                 msg.send "No encontre lo que buscabas :("
-                return
