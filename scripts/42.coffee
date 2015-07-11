@@ -31,8 +31,9 @@ module.exports = (robot) ->
 
                 people = JSON.parse(body)
 
+
                 message = for index, person of people
-                  "#{person.name} #{person.lastName}"
+                  message += "#{person.name} #{person.lastName} \m"
 
                 msg.send message
 
@@ -50,7 +51,7 @@ module.exports = (robot) ->
 
                 people = JSON.parse(body)
 
-                if body = ""
+                if body == ""
                   msg.send "No encontre a nadie en el equipo de #{team}"
                   return
 
