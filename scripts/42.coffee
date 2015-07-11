@@ -31,12 +31,9 @@ module.exports = (robot) ->
 
                 people = JSON.parse(body)
 
+                for index, person of people
+                    msg.send "#{person.name} #{person.lastName}"
 
-
-                message = for index, person of people
-                    "#{person.name} #{person.lastName} \n"
-                console.log(message)
-                msg.send message
 
     robot.respond /quienes estan en (.*)/i, (msg) ->
         team = msg.match[1]
@@ -56,10 +53,8 @@ module.exports = (robot) ->
                   msg.send "No encontre a nadie en el equipo de #{team}"
                   return
 
-                message = for index, person of people
-                  "#{person.name} #{person.lastName} \n"
-
-                msg.send message
+                for index, person of people
+                  msg.send "#{person.name} #{person.lastName} \n"
 
     robot.respond /cuentame acerca de (.*)/i, (msg) ->
         person = msg.match[1]
@@ -90,11 +85,13 @@ module.exports = (robot) ->
 
                 message = "Su nombre completo es: #{persona.name} #{persona.lastName}. \n"
 
+                message += "Su correo es: #{persona.workEmail}. Su skype es #{persona.skype}. \n"
+
                 switch persona.role
                   when "Developer" then message += "Le gusta hechar codigo en la frescas mañanas de #{location}."
                   when "IT Support" then message += "Atraer la atencion negandole cosas a la gente de Nearsoft."
                   when "Intern" then message += "Le gusta que le digan Intern. ¯\\_(ツ)_/¯"
-                  when persona.role.indexOf("Tester") > -1 then  message += "Prueba en las mañanas, tardes y ocasionalmente en las noches."
+                  when persona.role.toLowerCase().indexOf("test") > -1 then  message += "Prueba en las mañanas, tardes y ocasionalmente en las noches."
                   else  message += "Salvar el mundo en sus tiempos libros y tomar cafe."
 
                 msg.send message
