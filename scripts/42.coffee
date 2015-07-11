@@ -32,9 +32,10 @@ module.exports = (robot) ->
                 people = JSON.parse(body)
 
 
-                message = for index, person of people
-                  message += "#{person.name} #{person.lastName} \m"
 
+                message = for index, person of people
+                    "#{person.name} #{person.lastName} \n"
+                console.log(message)
                 msg.send message
 
     robot.respond /quienes estan en (.*)/i, (msg) ->
@@ -56,12 +57,12 @@ module.exports = (robot) ->
                   return
 
                 message = for index, person of people
-                  "#{person.name} #{person.lastname} \n"
+                  "#{person.name} #{person.lastName} \n"
+
                 msg.send message
 
     robot.respond /cuentame acerca de (.*)/i, (msg) ->
         person = msg.match[1]
-
         [first, last] = person.split(" ")
 
         msg.http("#{host}/api/person/#{first}/#{last}")
@@ -101,7 +102,7 @@ module.exports = (robot) ->
     robot.respond /busca (.*)/i, (msg) ->
         searchTerm = msg.match[1]
 
-        msg.http("#{host}/api/search/searchTerm")
+        msg.http("#{host}/api/people/search/#{searchTerm}")
             .get() (err, res, body) ->
               # pretend there's error checking code here
                 if res.statusCode != 200
