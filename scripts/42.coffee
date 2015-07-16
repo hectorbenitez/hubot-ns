@@ -1,13 +1,9 @@
 module.exports = (robot) ->
     answer = 42
-    host = "https://boiling-dawn-2781.herokuapp.com"
-
+    host = process.env.PEOPLE_API_HOST || "http://localhost:8000"
+    
     robot.respond /cual es la respuesta a la vida, el universo y todo lo demas/, (res) ->
-      unless answer?
-        res.send "Missing HUBOT_ANSWER_TO_THE_ULTIMATE_QUESTION_OF_LIFE_THE_UNIVERSE_AND_EVERYTHING in environment: please set and try again"
-        returnbog s
       res.send "#{answer}, pero cual es la pregunta?"
-      return
 
     robot.hear /bot help -ns/i, (msg) ->
       help = "Comandos: \n"
@@ -18,21 +14,25 @@ module.exports = (robot) ->
       msg.send help
 
     robot.respond /quienes chambean en nearsoft/i, (msg) ->
-        msg.http("#{host}/api/people")
+        url = "#{host}/api/people"
+        msg.http(url)
             .get() (err, res, body) ->
               # pretend there's error checking code here
-                console.log(res.statusCode)
-
-                if res.statusCode != 200
-                  switch res.statusCode
+                if !res || res.statusCode != 200
+                  statusCode = if res then res.statusCode else 503
+                  switch statusCode
                     when 404 then msg.send "404 - Service got lost in time and space"
                     else msg.send "Unable to process your request and we're not sure why :("
                   return
 
                 people = JSON.parse(body)
-
+                message = ""
                 for index, person of people
-                    msg.send "#{person.name} #{person.lastName}"
+                    message += "#{person.name} #{person.lastName} \n"
+
+                msg.send message
+
+
 
 
     robot.respond /quienes estan en (.*)/i, (msg) ->
@@ -53,8 +53,11 @@ module.exports = (robot) ->
                   msg.send "No encontre a nadie en el equipo de #{team}"
                   return
 
+                message = ""
                 for index, person of people
-                  msg.send "#{person.name} #{person.lastName} \n"
+                  message += "#{person.name} #{person.lastName} \n"
+
+                msg.send message
 
     robot.respond /cuentame acerca de (.*)/i, (msg) ->
         person = msg.match[1]
@@ -98,8 +101,10 @@ module.exports = (robot) ->
 
     robot.respond /busca (.*)/i, (msg) ->
         searchTerm = msg.match[1]
-
-        msg.http("#{host}/api/people/search/#{searchTerm}")
+        if !searchTerm && searchTerm == ""
+          msg.send "No puedes hacer una busqueda vacia :("
+          return
+        msg.http("#{host}/api/people/search?query=#{searchTerm}")
             .get() (err, res, body) ->
               # pretend there's error checking code here
                 if res.statusCode != 200
@@ -113,7 +118,7 @@ module.exports = (robot) ->
                 if people.length > 0
                   msg.send "Encontre " + people.length + " personas:"
                   message = for index, person of people
-                    "#{person.role}: #{person.name} #{person.lastname}. Se encuentra en #{person.location}. Su correo es #{person.workEmail} y su Skype es #{person.skype}.  \n"
+                    "#{person.role}: #{person.name} #{person.lastName}. Se encuentra en #{person.location}. Su correo es #{person.workEmail} y su Skype es #{person.skype}.  \n"
                   msg.send message
                   return
 
