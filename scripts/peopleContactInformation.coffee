@@ -96,34 +96,34 @@ module.exports = (robot) ->
           robot.send message
 
 scopedCredentials = success: false
+MAX_RETRIES = 3
 
 sendRequest = (robot, url, cb) ->
   today = new Date
   dd = today.getDate()
   retry = 0
-  console.log(scopedCredentials)
+
   if !scopedCredentials.success || dd > scopedCredentials.expirationDate
-    if(retry == 3)
+    if(retry == MAX_RETRIES)
       return
 
     peopleApiAuth = require('../config/people-api-auth.json')
 
-    authenticate robot, peopleApiAuth.username, peopleApiAuth.clientId, peopleApiAuth.secret, (credentials) ->
+    authenticationUrl = "http://localhost:8000/api/user/authenticate?user=#{peopleApiAuth.username}&clientId=#{peopleApiAuth.clientId}&secret=#{peopleApiAuth.secret}"
+
+    sendHttpRequest robot, authenticationUrl, {}, (credentials) ->
       retry += 1
       scopedCredentials = credentials
-      sendAuthenticatedRequest robot, url, credentials.token, (result) ->
-        console.log(result)
+      sendHttpRequest robot, url, {'x-access-token': credentials.token}, (result) ->
         cb result
     return
 
-  sendAuthenticatedRequest robot, url, scopedCredentials.token, (result) ->
+  sendHttpRequest robot, url, {'x-access-token': scopedCredentials.token}, (result) ->
     cb result
 
-
-
-sendAuthenticatedRequest = (robot, url, headers, cb) ->
+sendHttpRequest = (robot, url, headers, cb) ->
   robot.http(url)
-    .header('x-access-token', token)
+    .headers(headers)
     .get() (err, res, body) ->
         if !res || res.statusCode != 200
           statusCode = if res then res.statusCode else 503
@@ -132,23 +132,7 @@ sendAuthenticatedRequest = (robot, url, headers, cb) ->
             when 403
               console.log("credentials expired")
               scopedCredentials = success: false
-              sendRequest(robot, url)
+              sendHttpRequest robot, url
             else robot.send "Algo paso mientras dormia, no puedo contestarte en este momento. :("
           return
         cb JSON.parse(body)
-
-
-authenticate = (robot, username, clientId, secret, cb) ->
-  url = "http://localhost:8000/api/user/authenticate?user=#{username}&clientId=#{clientId}&secret=#{secret}"
-
-  robot.http(url)
-      .get() (err, res, body) ->
-        # pretend there's error checking code here
-          if !res || res.statusCode != 200
-            statusCode = if res then res.statusCode else 503
-            switch statusCode
-              when 404 then robot.send "404 - No encontre lo buscabas"
-              when 403 then authorize(robot, username, clientId, secret) (credentials)
-              else robot.send "Algo paso mientras dormia, no puedo contestarte en este momento. :("
-            return
-          cb JSON.parse(body)
