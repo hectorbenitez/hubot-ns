@@ -17,8 +17,10 @@
 # Author:
 #   luis-montealegre
 
+host = process.env.PEOPLE_API_HOST || "http://localhost:8000"
+
 module.exports = (robot) ->
-    host = process.env.PEOPLE_API_HOST || "http://localhost:8000"
+
 
     robot.respond /quienes chambean en nearsoft/i, (robot) ->
         url = "#{host}/api/people"
@@ -109,7 +111,7 @@ sendRequest = (robot, url, cb) ->
 
     peopleApiAuth = require('../config/people-api-auth.json')
 
-    authenticationUrl = "http://localhost:8000/api/user/authenticate?user=#{peopleApiAuth.username}&clientId=#{peopleApiAuth.clientId}&secret=#{peopleApiAuth.secret}"
+    authenticationUrl = "#{host}/api/user/authenticate?user=#{peopleApiAuth.username}&clientId=#{peopleApiAuth.clientId}&secret=#{peopleApiAuth.secret}"
 
     sendHttpRequest robot, authenticationUrl, {}, (credentials) ->
       retry += 1
