@@ -109,7 +109,7 @@ sendRequest = (robot, url, cb) ->
     if(retry == MAX_RETRIES)
       return
 
-    peopleApiAuth = require('../config/people-api-auth.json')
+    peopleApiAuth = require('../config/people-api.json')
 
     authenticationUrl = "#{host}/api/user/authenticate?user=#{peopleApiAuth.username}&clientId=#{peopleApiAuth.clientId}&secret=#{peopleApiAuth.secret}"
 
