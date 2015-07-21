@@ -37,10 +37,9 @@ module.exports = (robot) ->
           robot.send message
 
     robot.respond /quienes estan en (.*)/i, (robot) ->
-        team = robot.match[1]
-
         url = "#{host}/api/team/#{team}"
 
+        team = robot.match[1]
         sendRequest robot, url, (people) ->
           if people.length == 0
             robot.send "No encontre a nadie en el equipo de #{team}"
@@ -53,10 +52,10 @@ module.exports = (robot) ->
           robot.send message
 
     robot.respond /cuentame acerca de (.*)/i, (robot) ->
+        url = "#{host}/api/person/#{first}/#{last}"
+
         person = robot.match[1]
         [first, last] = person.split(" ")
-
-        url = "#{host}/api/person/#{first}/#{last}"
 
         sendRequest robot, url, (persona) ->
             if persona == ""
@@ -85,9 +84,8 @@ module.exports = (robot) ->
             robot.send message
 
     robot.respond /busca (.*)/i, (robot) ->
-        searchTerm = robot.match[1]
-
         url = "#{host}/api/people/search?query=#{searchTerm}"
+        searchTerm = robot.match[1]
 
         sendRequest robot, url, (people) ->
           if people.length == 0
@@ -114,7 +112,7 @@ sendRequest = (robot, url, cb) ->
     peopleApiAuth = require('./config/people_api.json')
 
     authenticationUrl = "#{host}/api/user/authenticate?user=#{peopleApiAuth.username}&clientId=#{peopleApiAuth.clientId}&secret=#{peopleApiAuth.secret}"
-    console.log(authenticationUrl)
+
     sendHttpRequest robot, authenticationUrl, {}, (credentials) ->
       retry += 1
       scopedCredentials = credentials
