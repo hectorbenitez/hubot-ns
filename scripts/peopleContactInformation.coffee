@@ -95,9 +95,52 @@ module.exports = (robot) ->
             "#{person.role}: #{person.name} #{person.lastName}. Se encuentra en #{person.location}. Su correo es #{person.workEmail} y su Skype es #{person.skype}.  \n"
           robot.send message
 
-
+scopedCredentials = success: false
 
 sendRequest = (robot, url, cb) ->
+  today = new Date
+  dd = today.getDate()
+  retry = 0
+  console.log(scopedCredentials)
+  if !scopedCredentials.success || dd > scopedCredentials.expirationDate
+    if(retry == 3)
+      return
+
+    peopleApiAuth = require('../config/people-api-auth.json')
+
+    authenticate robot, peopleApiAuth.username, peopleApiAuth.clientId, peopleApiAuth.secret, (credentials) ->
+      retry += 1
+      scopedCredentials = credentials
+      sendAuthenticatedRequest robot, url, credentials.token, (result) ->
+        console.log(result)
+        cb result
+    return
+
+  sendAuthenticatedRequest robot, url, scopedCredentials.token, (result) ->
+    cb result
+
+
+
+sendAuthenticatedRequest = (robot, url, headers, cb) ->
+  robot.http(url)
+    .header('x-access-token', token)
+    .get() (err, res, body) ->
+        if !res || res.statusCode != 200
+          statusCode = if res then res.statusCode else 503
+          switch statusCode
+            when 404 then robot.send "404 - No encontre lo buscabas"
+            when 403
+              console.log("credentials expired")
+              scopedCredentials = success: false
+              sendRequest(robot, url)
+            else robot.send "Algo paso mientras dormia, no puedo contestarte en este momento. :("
+          return
+        cb JSON.parse(body)
+
+
+authenticate = (robot, username, clientId, secret, cb) ->
+  url = "http://localhost:8000/api/user/authenticate?user=#{username}&clientId=#{clientId}&secret=#{secret}"
+
   robot.http(url)
       .get() (err, res, body) ->
         # pretend there's error checking code here
@@ -105,6 +148,7 @@ sendRequest = (robot, url, cb) ->
             statusCode = if res then res.statusCode else 503
             switch statusCode
               when 404 then robot.send "404 - No encontre lo buscabas"
+              when 403 then authorize(robot, username, clientId, secret) (credentials)
               else robot.send "Algo paso mientras dormia, no puedo contestarte en este momento. :("
             return
           cb JSON.parse(body)
