@@ -132,7 +132,7 @@ sendHttpRequest = (robot, url, headers, cb) ->
             when 403
               console.log("credentials expired")
               scopedCredentials = success: false
-              sendHttpRequest robot, url
+              sendRequest robot, url
             else robot.send "Algo paso mientras dormia, no puedo contestarte en este momento. :("
           return
         cb JSON.parse(body)
