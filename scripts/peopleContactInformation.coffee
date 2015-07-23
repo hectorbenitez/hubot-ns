@@ -55,8 +55,10 @@ module.exports = (robot) ->
     robot.respond /cuentame acerca de (.*)/i, (robot) ->
         person = robot.match[1]
         [first, last] = person.split(" ")
-        url = "#{host}/api/person/#{first}/#{last}"
 
+        baseUrl = "#{host}/api/person/#{first}"
+        url = if last then "#{baseUrl}/#{last}" else baseUrl
+        console.log(url)
         sendRequest robot, url, (persona) ->
             if persona == ""
               robot.send "No encontre a nadie con el nombre de #{first} #{last}"
@@ -92,28 +94,30 @@ module.exports = (robot) ->
             robot.send "No encontre lo que buscabas :("
             return
 
-          message = "Encontre " + people.length + " personas: \n"
+          message = "Encontre #{people.length} personas: \n"
+
           for index, person of people
             message += "#{person.role}: #{person.name} #{person.lastName}. Se encuentra en #{person.location}. Su correo es #{person.workEmail} y su Skype es #{person.skype}.  \n"
 
           robot.send message
 
-    robot.respond /quienes se encuentran en (.*)|quienes estan en (.*)/i, (robot) ->
+    robot.respond /quienes se encuentran en (.*)/i, (robot) ->
         place = robot.match[1]
 
-        if place === "otro lugar" || place === "otro"
+        if place == "otro lugar" || place == "otro"
           place = "Other"
 
         url = "#{host}/api/location/#{place}"
 
         sendRequest robot, url, (people) ->
           if people.length == 0
-            robot.send "No encontre personas en " + "#{place}" + " :("
+            robot.send "No encontre personas en #{place} :("
             return
 
-          message = "Encontre " + people.length + " personas en " + "#{place}" + ":"
+          message = "Encontre #{people.length} personas en #{place}:"
+
           for index, person of people
-            message += "#{person.role}: #{person.name} #{person.lastName}. Se encuentra en #{person.location}. Su correo es #{person.workEmail} y su Skype es #{person.skype}.  \n"
+            message += "#{person.name} #{person.lastName}. Su correo es #{person.workEmail} y su Skype es #{person.skype}.  \n"
 
           robot.send message
 
