@@ -92,10 +92,31 @@ module.exports = (robot) ->
             robot.send "No encontre lo que buscabas :("
             return
 
-          robot.send "Encontre " + people.length + " personas:"
-          message = for index, person of people
-            "#{person.role}: #{person.name} #{person.lastName}. Se encuentra en #{person.location}. Su correo es #{person.workEmail} y su Skype es #{person.skype}.  \n"
+          message = "Encontre " + people.length + " personas: \n"
+          for index, person of people
+            message += "#{person.role}: #{person.name} #{person.lastName}. Se encuentra en #{person.location}. Su correo es #{person.workEmail} y su Skype es #{person.skype}.  \n"
+
           robot.send message
+
+    robot.respond /quienes se encuentran en (.*)|quienes estan en (.*)/i, (robot) ->
+        place = robot.match[1]
+
+        if place === "otro lugar" || place === "otro"
+          place = "Other"
+
+        url = "#{host}/api/location/#{place}"
+
+        sendRequest robot, url, (people) ->
+          if people.length == 0
+            robot.send "No encontre personas en " + "#{place}" + " :("
+            return
+
+          message = "Encontre " + people.length + " personas en " + "#{place}" + ":"
+          for index, person of people
+            message += "#{person.role}: #{person.name} #{person.lastName}. Se encuentra en #{person.location}. Su correo es #{person.workEmail} y su Skype es #{person.skype}.  \n"
+
+          robot.send message
+
 
 scopedCredentials = success: false
 MAX_RETRIES = 3
