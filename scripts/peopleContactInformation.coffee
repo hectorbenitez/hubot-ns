@@ -37,7 +37,7 @@ module.exports = (robot) ->
           robot.send message
 
     robot.respond /quienes estan en (.*)/i, (robot) ->
-        team = robot.match[1]
+        team = (robot.match[1].split(' ').map (word) -> word[0].toUpperCase() + word[1..-1].toLowerCase()).join ' '
 
         url = "#{host}/api/team/#{team}"
 
@@ -53,15 +53,16 @@ module.exports = (robot) ->
           robot.send message
 
     robot.respond /cuentame acerca de (.*)/i, (robot) ->
-        person = robot.match[1]
+        person = (robot.match[1].split(' ').map (word) -> word[0].toUpperCase() + word[1..-1].toLowerCase()).join ' '
+
         [first, last] = person.split(" ")
 
         baseUrl = "#{host}/api/person/#{first}"
         url = if last then "#{baseUrl}/#{last}" else baseUrl
-        console.log(url)
+
         sendRequest robot, url, (persona) ->
             if persona == ""
-              robot.send "No encontre a nadie con el nombre de #{first} #{last}"
+              robot.send "No encontre a nadie con el nombre de #{person}"
               return
 
             location = ""
@@ -102,10 +103,13 @@ module.exports = (robot) ->
           robot.send message
 
     robot.respond /quienes se encuentran en (.*)/i, (robot) ->
-        place = robot.match[1]
-
-        if place == "otro lugar" || place == "otro"
-          place = "Other"
+        my_place = robot.match[1];
+        place = my_place
+        switch my_place.toLowerCase()
+          when "otro lugar" || "otro" then place = "Other"
+          when "el df" then place = "DF"
+          when "hermosillo" then place = "HMO"
+          when "chihuahua" then place = "CUU"
 
         url = "#{host}/api/location/#{place}"
 
@@ -114,7 +118,7 @@ module.exports = (robot) ->
             robot.send "No encontre personas en #{place} :("
             return
 
-          message = "Encontre #{people.length} personas en #{place}:"
+          message = "Encontre #{people.length} personas en #{my_place}: \n"
 
           for index, person of people
             message += "#{person.name} #{person.lastName}. Su correo es #{person.workEmail} y su Skype es #{person.skype}.  \n"
@@ -162,4 +166,7 @@ sendHttpRequest = (robot, url, headers, cb) ->
               sendRequest robot, url
             else robot.send "Algo paso mientras dormia, no puedo contestarte en este momento. :("
           return
-        cb JSON.parse(body)
+        if body == ""
+          cb body
+        else
+          cb JSON.parse(body)
