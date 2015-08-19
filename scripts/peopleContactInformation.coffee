@@ -27,7 +27,7 @@ module.exports = (robot) ->
 
         sendRequest robot, url, (people) ->
           if people.length == 0
-            robot.send "No encontre a nadie :("
+            robot.send "No encontré a nadie :("
             return
 
           message = ""
@@ -43,7 +43,7 @@ module.exports = (robot) ->
 
         sendRequest robot, url, (people) ->
           if people.length == 0
-            robot.send "No encontre a nadie en el equipo de #{team}"
+            robot.send "No encontré a nadie en el equipo de #{team}"
             return
 
           message = ""
@@ -62,7 +62,7 @@ module.exports = (robot) ->
 
         sendRequest robot, url, (persona) ->
             if persona == ""
-              robot.send "No encontre a nadie con el nombre de #{person}"
+              robot.send "No encontré a nadie con el nombre de #{person}"
               return
 
             location = ""
@@ -75,7 +75,7 @@ module.exports = (robot) ->
 
             message = "Su nombre completo es: #{persona.name} #{persona.lastName}. \n"
 
-            message += "Su correo es: #{persona.workEmail}. Su skype es #{persona.skype}. \n"
+            message += "Su correo es: #{persona.workEmail}. Su skype es #{person.skype} <skype:#{person.skype}?chat>. \n"
 
             switch persona.role
               when "Developer" then message += "Le gusta tirar codigo en la frescas mañanas de #{location}."
@@ -92,13 +92,13 @@ module.exports = (robot) ->
 
         sendRequest robot, url, (people) ->
           if people.length == 0
-            robot.send "No encontre lo que buscabas :("
+            robot.send "No encontré lo que buscabas :("
             return
 
-          message = "Encontre #{people.length} personas: \n"
+          message = "Encontré #{people.length} personas: \n"
 
           for index, person of people
-            message += "#{person.role}: #{person.name} #{person.lastName}. Se encuentra en #{person.location}. Su correo es #{person.workEmail} y su Skype es #{person.skype}.  \n"
+            message += "#{person.role}: #{person.name} #{person.lastName}. Se encuentra en #{person.location}. Su correo es #{person.workEmail} y su Skype es #{person.skype} <skype:#{person.skype}?chat>.\n"
 
           robot.send message
 
@@ -115,13 +115,13 @@ module.exports = (robot) ->
 
         sendRequest robot, url, (people) ->
           if people.length == 0
-            robot.send "No encontre personas en #{place} :("
+            robot.send "No encontré personas en #{place} :("
             return
 
-          message = "Encontre #{people.length} personas en #{my_place}: \n"
+          message = "Encontré #{people.length} personas en #{my_place}: \n"
 
           for index, person of people
-            message += "#{person.name} #{person.lastName}. Su correo es #{person.workEmail} y su Skype es #{person.skype}.  \n"
+            message += "#{person.name} #{person.lastName}. Su correo es #{person.workEmail} y su Skype es #{person.skype} <skype:#{person.skype}?chat>.  \n"
 
           robot.send message
 
@@ -159,7 +159,7 @@ sendHttpRequest = (robot, url, headers, cb) ->
         if !res || res.statusCode != 200
           statusCode = if res then res.statusCode else 503
           switch statusCode
-            when 404 then robot.send "404 - No encontre lo buscabas"
+            when 404 then robot.send "404 - No encontré lo buscabas"
             when 403
               console.log("credentials expired")
               scopedCredentials = success: false
