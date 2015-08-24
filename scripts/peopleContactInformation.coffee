@@ -6,10 +6,11 @@
 #
 #
 # Commands:
-#   bot quienes chambean en nearsoft - Te regresa una lista de todas las personas de Nearsoft
-#   bot quienes estan en <nombre_del_equipo> - Te regresa una lista de todas las personas del equipo especificado
+#   bot quienes chambean en nearsoft - Regresa una lista de todas las personas de Nearsoft
+#   bot quienes estan en <nombre_del_equipo> - Regresa una lista de todas las personas del equipo especificado
 #   bot cuentame acerca de <nombre> <apellido_paterno> - Una historia larga sobre la persona que buscaste
 #   bot busca <algo> - Busca por nombre, email y skype dentro del directorio de personas de Nearsoft
+#   quienes estan en <lugar> - Regresa una lista de personas que se encuentran en el lugar.
 #
 # Notes:
 #   None
@@ -53,35 +54,35 @@ module.exports = (robot) ->
           robot.send message
 
     robot.respond /cuentame acerca de (.*)/i, (robot) ->
-        person = (robot.match[1].split(' ').map (word) -> word[0].toUpperCase() + word[1..-1].toLowerCase()).join ' '
+        personName = (robot.match[1].split(' ').map (word) -> word[0].toUpperCase() + word[1..-1].toLowerCase()).join ' '
 
-        [first, last] = person.split(" ")
+        [first, last] = personName.split(" ")
 
         baseUrl = "#{host}/api/person/#{first}"
         url = if last then "#{baseUrl}/#{last}" else baseUrl
 
-        sendRequest robot, url, (persona) ->
-            if persona == ""
-              robot.send "No encontré a nadie con el nombre de #{person}"
+        sendRequest robot, url, (person) ->
+            if person == ""
+              robot.send "No encontré a nadie con el nombre de #{personName}"
               return
 
             location = ""
 
-            switch persona.location
+            switch person.location
               when "HMO" then location = "Hermosillo, Sonora"
               when "CUU" then location = "Chihuahua, Chihuahua"
               when "DF" then  location = "DF"
               else  location = "algun lugar en el planeta tierra"
 
-            message = "Su nombre completo es: #{persona.name} #{persona.lastName}. \n"
+            message = "Su nombre completo es: #{person.name} #{person.lastName}. \n"
 
-            message += "Su correo es: #{persona.workEmail}. Su skype es #{persona.skype} <skype:#{persona.skype}?chat>. \n"
+            message += "Su correo es: #{person.workEmail}. Su skype es #{person.skype} <skype:#{person.skype}?chat>. \n"
 
-            switch persona.role
+            switch person.role
               when "Developer" then message += "Le gusta tirar codigo en la frescas mañanas de #{location}."
               when "IT Support" then message += "Atraer la atencion negandole cosas a la gente de Nearsoft."
               when "Intern" then message += "Le gusta que le digan Intern. ¯\\_(ツ)_/¯"
-              when persona.role.toLowerCase().indexOf("test") > -1 then  message += "Prueba en las mañanas, tardes y ocasionalmente en las noches."
+              when person.role.toLowerCase().indexOf("test") > -1 then  message += "Prueba en las mañanas, tardes y ocasionalmente en las noches."
               else  message += "Salvar el mundo en sus tiempos libros y tomar cafe."
 
             robot.send message
