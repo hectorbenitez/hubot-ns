@@ -75,7 +75,7 @@ module.exports = (robot) ->
 
             message = "Su nombre completo es: #{persona.name} #{persona.lastName}. \n"
 
-            message += "Su correo es: #{persona.workEmail}. Su skype es #{person.skype} <skype:#{person.skype}?chat>. \n"
+            message += "Su correo es: #{persona.workEmail}. Su skype es #{persona.skype} <skype:#{persona.skype}?chat>. \n"
 
             switch persona.role
               when "Developer" then message += "Le gusta tirar codigo en la frescas mañanas de #{location}."
