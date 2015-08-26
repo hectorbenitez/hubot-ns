@@ -6,11 +6,11 @@
 #
 #
 # Commands:
-#   bot quienes chambean en nearsoft - Regresa una lista de todas las personas de Nearsoft
-#   bot quienes estan en <nombre_del_equipo> - Regresa una lista de todas las personas del equipo especificado
-#   bot cuentame acerca de <nombre> <apellido_paterno> - Una historia larga sobre la persona que buscaste
-#   bot busca <algo> - Busca por nombre, email y skype dentro del directorio de personas de Nearsoft
-#   quienes estan en <lugar> - Regresa una lista de personas que se encuentran en el lugar.
+#   bot who work's at nearsoft? - Returns all the people who work at nearsoft
+#   bot who's in <team_name>? - Returns a list of the people working at the specified team
+#   bot who's at <place>? - Regresa una lista de personas que se encuentran en el lugar.
+#   bot tell me about <name> <last_name> - Una historia larga sobre la persona que buscaste
+#   bot find <email/skype/name> - Busca por nombre, email y skype dentro del directorio de personas de Nearsoft
 #
 # Notes:
 #   None
@@ -23,12 +23,12 @@ host = process.env.PEOPLE_API_HOST || "http://localhost:8000"
 module.exports = (robot) ->
 
 
-    robot.respond /quienes chambean en nearsoft/i, (robot) ->
+    robot.respond /who works at nearsoft\?/i, (robot) ->
         url = "#{host}/api/people"
 
         sendRequest robot, url, (people) ->
           if people.length == 0
-            robot.send "No encontré a nadie :("
+            robot.send "I was not able to find any people working at nearsoft. :("
             return
 
           message = ""
@@ -37,14 +37,14 @@ module.exports = (robot) ->
 
           robot.send message
 
-    robot.respond /quienes estan en (.*)/i, (robot) ->
+    robot.respond /Who's in (.*)\?/i, (robot) ->
         team = (robot.match[1].split(' ').map (word) -> word[0].toUpperCase() + word[1..-1].toLowerCase()).join ' '
 
         url = "#{host}/api/team/#{team}"
 
         sendRequest robot, url, (people) ->
           if people.length == 0
-            robot.send "No encontré a nadie en el equipo de #{team}"
+            robot.send "Couldn't find a team with the name \"#{team}\"."
             return
 
           message = ""
@@ -53,7 +53,7 @@ module.exports = (robot) ->
 
           robot.send message
 
-    robot.respond /cuentame acerca de (.*)/i, (robot) ->
+    robot.respond /tell me about (.*)/i, (robot) ->
         personName = (robot.match[1].split(' ').map (word) -> word[0].toUpperCase() + word[1..-1].toLowerCase()).join ' '
 
         [first, last] = personName.split(" ")
@@ -63,7 +63,7 @@ module.exports = (robot) ->
 
         sendRequest robot, url, (person) ->
             if person == ""
-              robot.send "No encontré a nadie con el nombre de #{personName}"
+              robot.send "I couldn't find \"#{personName}\". Maybe I forgot where to find him/her."
               return
 
             location = ""
@@ -72,43 +72,43 @@ module.exports = (robot) ->
               when "HMO" then location = "Hermosillo, Sonora"
               when "CUU" then location = "Chihuahua, Chihuahua"
               when "DF" then  location = "DF"
-              else  location = "algun lugar en el planeta tierra"
+              else  location = "somewhere in the earth."
 
-            message = "Su nombre completo es: #{person.name} #{person.lastName}. \n"
+            message = "His/her fullname is: #{person.name} #{person.lastName}. \n"
 
-            message += "Su correo es: #{person.workEmail}. Su skype es #{person.skype} <skype:#{person.skype}?chat>. \n"
+            message += "Email: #{person.workEmail}. Skype: #{person.skype} <skype:#{person.skype}?chat>. \n"
 
             switch person.role
-              when "Developer" then message += "Le gusta tirar codigo en la frescas mañanas de #{location}."
-              when "IT Support" then message += "Atraer la atencion negandole cosas a la gente de Nearsoft."
-              when "Intern" then message += "Le gusta que le digan Intern. ¯\\_(ツ)_/¯"
-              when person.role.toLowerCase().indexOf("test") > -1 then  message += "Prueba en las mañanas, tardes y ocasionalmente en las noches."
-              else  message += "Salvar el mundo en sus tiempos libros y tomar cafe."
+              when "Developer" then message += "Likes to code in #{location}."
+              when "IT Support" then message += "Enjoys denying pretty things to people in #{location}."
+              when "Intern" then message += "Likes to be called an \"Intern\". ¯\\_(ツ)_/¯"
+              when person.role.toLowerCase().indexOf("test") > -1 then  message += "Likes to test and break things developer do (or not)."
+              else  message += "Saves the world in their free time and read some books."
 
             robot.send message
 
-    robot.respond /busca (.*)/i, (robot) ->
+    robot.respond /find (.*)/i, (robot) ->
         searchTerm = robot.match[1]
         url = "#{host}/api/people/search?query=#{searchTerm}"
 
         sendRequest robot, url, (people) ->
           if people.length == 0
-            robot.send "No encontré lo que buscabas :("
+            robot.send "I was not able to find \"#(searchTerm)\" :("
             return
 
-          message = "Encontré #{people.length} personas: \n"
+          message = "I found #{people.length} people: \n"
 
           for index, person of people
-            message += "#{person.role}: #{person.name} #{person.lastName}. Se encuentra en #{person.location}. Su correo es #{person.workEmail} y su Skype es #{person.skype} <skype:#{person.skype}?chat>.\n"
+            message += "#{person.role}: #{person.name} #{person.lastName}. Working at #{person.location}. His/her email is #{person.workEmail} and skype is #{person.skype} <skype:#{person.skype}?chat>.\n"
 
           robot.send message
 
-    robot.respond /quienes se encuentran en (.*)/i, (robot) ->
+    robot.respond /who's at (.*)\?/i, (robot) ->
         my_place = robot.match[1];
         place = my_place
         switch my_place.toLowerCase()
-          when "otro lugar" || "otro" then place = "Other"
-          when "el df" then place = "DF"
+          when "someplace" || "otro" then place = "Other"
+          when "DF" then place = "DF"
           when "hermosillo" then place = "HMO"
           when "chihuahua" then place = "CUU"
 
@@ -116,13 +116,13 @@ module.exports = (robot) ->
 
         sendRequest robot, url, (people) ->
           if people.length == 0
-            robot.send "No encontré personas en #{place} :("
+            robot.send "I was not able to find people working at #{place} :("
             return
 
-          message = "Encontré #{people.length} personas en #{my_place}: \n"
+          message = "Found #{people.length} people in #{my_place}: \n"
 
           for index, person of people
-            message += "#{person.name} #{person.lastName}. Su correo es #{person.workEmail} y su Skype es #{person.skype} <skype:#{person.skype}?chat>.  \n"
+            message += "#{person.name} #{person.lastName}. His/her email is #{person.workEmail} and skype is #{person.skype} <skype:#{person.skype}?chat>.  \n"
 
           robot.send message
 
@@ -160,12 +160,12 @@ sendHttpRequest = (robot, url, headers, cb) ->
         if !res || res.statusCode != 200
           statusCode = if res then res.statusCode else 503
           switch statusCode
-            when 404 then robot.send "404 - No encontré lo buscabas"
+            when 404 then robot.send "404 - Failed to find what you were looking for."
             when 403
-              console.log("credentials expired")
+              console.log("Sorry my credentials expired, find the developer and yell at him/her")
               scopedCredentials = success: false
               sendRequest robot, url
-            else robot.send "Algo paso mientras dormia, no puedo contestarte en este momento. :("
+            else robot.send "Something happened while i was asleep, try again later. :(. ErrorCode: #{statusCode}"
           return
         if body == ""
           cb body
