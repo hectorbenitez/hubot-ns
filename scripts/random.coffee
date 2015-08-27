@@ -25,5 +25,8 @@ module.exports = (robot) ->
     robot.respond /que piensa el mike de (.*)/i, (res) ->
       res.reply "¯\\_(ツ)_/¯"
 
-    robot.hear /por que!|why!/i, (res) ->
+    robot.hear /por que!\?|why!\?/i, (res) ->
       res.reply "ლ(ಠ_ಠლ)"
+
+    robot.hear /quien es el hombre\?/, (res) ->
+      res.reply "Yo! ლ(ಠ_ಠლ)! "

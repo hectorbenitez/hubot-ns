@@ -11,7 +11,9 @@
 #   bot who's at <place>? - Returns a list of
 #   bot tell me about <name> <last_name> - A long story about the person you are looking for
 #   bot find <email/skype/name> - Search by name, skype or email
-#   bit who works with <skill>? - Returns a list of people with the specified skill
+#   bot who works with <skill>? - Returns a list of people with the specified skill
+#   bot who works with <skill> at <location>? - Returns a list of people with the specified skill in a certain location
+#   bot who works with <skill> at <location> in <team>? - Returns a list of people with the specified skill in a certain location and team
 #
 # Notes:
 #   None
