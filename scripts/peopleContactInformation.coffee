@@ -11,7 +11,7 @@
 #   bot who's at <place>? - Returns a list of
 #   bot tell me about <name> <last_name> - A long story about the person you are looking for
 #   bot find <email/skype/name> - Search by name, skype or email
-#   bit who works with <skill> - Returns a list of people with the specified skill
+#   bit who works with <skill>? - Returns a list of people with the specified skill
 #
 # Notes:
 #   None
@@ -38,7 +38,7 @@ module.exports = (robot) ->
 
           robot.send message
 
-    robot.respond /who works with (.*)\?/i, (robot) ->
+    robot.respond /who works with ([-_0-9a-zA-Z\.]+)\?/i, (robot) ->
       skill = robot.match[1]
 
       url = "#{host}/api/people/#{skill}"
@@ -51,6 +51,41 @@ module.exports = (robot) ->
         message = ""
         for index, person of people
             message += "#{person.name} #{person.lastName} in #{person.location} \n"
+
+        robot.send message
+
+    robot.respond /who works with ([-_0-9a-zA-Z\.]+) at ([-_0-9a-zA-Z\.]+)\?/i, (robot) ->
+      skill = robot.match[1]
+      location = robot.match[2]
+
+      url = "#{host}/api/people/#{skill}?location=#{location}"
+
+      sendRequest robot, url, (people) ->
+        if people.length == 0
+          robot.send "I wasn't able to find people with #{skill} skill at #{location}. :("
+          return
+
+        message = ""
+        for index, person of people
+            message += "#{person.name} #{person.lastName}. Email: #{person.workEmail}. Skype: #{person.skype} <skype:#{person.skype}?chat>.\n"
+
+        robot.send message
+
+    robot.respond /who works with ([-_0-9a-zA-Z\.]+) at ([-_0-9a-zA-Z\.]+) in ([-_0-9a-zA-Z\.]+)\?/i, (robot) ->
+      skill = robot.match[1]
+      location = robot.match[2]
+      team = robot.match[3]
+
+      url = "#{host}/api/people/#{robot.match[1]}?location=#{robot.match[2]}&team=#{robot.match[3]}"
+
+      sendRequest robot, url, (people) ->
+        if people.length == 0
+          robot.send "I wasn't able to find people with #{skill} skill at #{location} in #{team}. :("
+          return
+
+        message = ""
+        for index, person of people
+            message += "#{person.name} #{person.lastName}. Email: #{person.workEmail}. Skype: #{person.skype} <skype:#{person.skype}?chat>.\n"
 
         robot.send message
 
