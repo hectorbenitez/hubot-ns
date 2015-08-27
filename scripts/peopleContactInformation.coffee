@@ -8,9 +8,10 @@
 # Commands:
 #   bot who work's at nearsoft? - Returns all the people who work at nearsoft
 #   bot who's in <team_name>? - Returns a list of the people working at the specified team
-#   bot who's at <place>? - Regresa una lista de personas que se encuentran en el lugar.
-#   bot tell me about <name> <last_name> - Una historia larga sobre la persona que buscaste
-#   bot find <email/skype/name> - Busca por nombre, email y skype dentro del directorio de personas de Nearsoft
+#   bot who's at <place>? - Returns a list of
+#   bot tell me about <name> <last_name> - A long story about the person you are looking for
+#   bot find <email/skype/name> - Search by name, skype or email
+#   bit who works with <skill> - Returns a list of people with the specified skill
 #
 # Notes:
 #   None
@@ -36,6 +37,22 @@ module.exports = (robot) ->
               message += "#{person.name} #{person.lastName} \n"
 
           robot.send message
+
+    robot.respond /who works with (.*)\?/i, (robot) ->
+      skill = robot.match[1]
+
+      url = "#{host}/api/people/#{skill}"
+
+      sendRequest robot, url, (people) ->
+        if people.length == 0
+          robot.send "I wasn't able to find people with #{skill} skill. :("
+          return
+
+        message = ""
+        for index, person of people
+            message += "#{person.name} #{person.lastName} in #{person.location} \n"
+
+        robot.send message
 
     robot.respond /Who's in (.*)\?/i, (robot) ->
         team = (robot.match[1].split(' ').map (word) -> word[0].toUpperCase() + word[1..-1].toLowerCase()).join ' '
