@@ -28,5 +28,5 @@ module.exports = (robot) ->
     robot.hear /por que!\?|why!\?/i, (res) ->
       res.reply "ლ(ಠ_ಠლ)"
 
-    robot.hear /quien es el hombre\?/, (res) ->
+    robot.hear /quien es el robot\?/, (res) ->
       res.reply "Yo! ლ(ಠ_ಠლ)! "
