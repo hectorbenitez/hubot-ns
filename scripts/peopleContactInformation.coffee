@@ -14,6 +14,8 @@
 #   bot who works with <skill>? - Returns a list of people with the specified skill
 #   bot who works with <skill> at <location>? - Returns a list of people with the specified skill in a certain location
 #   bot who works with <skill> at <location> in <team>? - Returns a list of people with the specified skill in a certain location and team
+#   bot who's in <location> and is a <role>? - Returns a list of people in a certain location with the specified role
+#   bot who's in <location> in <team>? - Returns a list of people in a certain location with the specified team
 #
 # Notes:
 #   None
