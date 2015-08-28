@@ -78,7 +78,7 @@ module.exports = (robot) ->
       location = robot.match[2]
       team = robot.match[3]
 
-      url = "#{host}/api/people/#{robot.match[1]}?location=#{robot.match[2]}&team=#{robot.match[3]}"
+      url = "#{host}/api/people/#{skill}?location=#{location}&team=#{team}"
 
       sendRequest robot, url, (people) ->
         if people.length == 0
@@ -91,7 +91,7 @@ module.exports = (robot) ->
 
         robot.send message
 
-    robot.respond /Who's in (.*)\?/i, (robot) ->
+    robot.respond /who's in (.*)\?/i, (robot) ->
         team = (robot.match[1].split(' ').map (word) -> word[0].toUpperCase() + word[1..-1].toLowerCase()).join ' '
 
         url = "#{host}/api/team/#{team}"
@@ -106,6 +106,23 @@ module.exports = (robot) ->
             message += "#{person.name} #{person.lastName} \n"
 
           robot.send message
+
+    robot.respond /who's at ([-_0-9a-zA-Z\.]+) and is a (.*)\?/i, (robot) ->
+      location = robot.match[1]
+      role = robot.match[2]
+
+      url = "#{host}/api/people?location=#{location}&role=#{role}"
+
+      sendRequest robot, url, (people) ->
+        if people.length == 0
+          robot.send "I wasn't able to find people in #{location} who are #{role}. :("
+          return
+
+        message = ""
+        for index, person of people
+            message += "#{person.name} #{person.lastName}. Email: #{person.workEmail}. Skype: #{person.skype} <skype:#{person.skype}?chat>.\n"
+
+        robot.send message
 
     robot.respond /tell me about (.*)/i, (robot) ->
         personName = (robot.match[1].split(' ').map (word) -> word[0].toUpperCase() + word[1..-1].toLowerCase()).join ' '
