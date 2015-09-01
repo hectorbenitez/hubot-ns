@@ -16,7 +16,6 @@
 #   bot who works with <skill> at <location> in <team>? - Returns a list of people with the specified skill in a certain location and team
 #   bot who's in <location> and is a <role>? - Returns a list of people in a certain location with the specified role
 #   bot who's in <location> in <team>? - Returns a list of people in a certain location with the specified team
-#
 # Notes:
 #   None
 #
@@ -24,14 +23,14 @@
 #   luis-montealegre
 
 host = process.env.PEOPLE_API_HOST || "http://localhost:8000"
+service = require('../app/services/service.coffee')
 
 module.exports = (robot) ->
-
 
     robot.respond /who works at nearsoft\?/i, (robot) ->
         url = "#{host}/api/people"
 
-        sendRequest robot, url, (people) ->
+        service.sendRequest robot, url, (people) ->
           if people.length == 0
             robot.send "I was not able to find any people working at nearsoft. :("
             return
@@ -64,7 +63,7 @@ module.exports = (robot) ->
 
       url = "#{host}/api/people/#{skill}?location=#{location}"
 
-      sendRequest robot, url, (people) ->
+      service.sendRequest robot, url, (people) ->
         if people.length == 0
           robot.send "I wasn't able to find people with #{skill} skill at #{location}. :("
           return
@@ -82,7 +81,7 @@ module.exports = (robot) ->
 
       url = "#{host}/api/people/#{skill}?location=#{location}&team=#{team}"
 
-      sendRequest robot, url, (people) ->
+      service.sendRequest robot, url, (people) ->
         if people.length == 0
           robot.send "I wasn't able to find people with #{skill} skill at #{location} in #{team}. :("
           return
@@ -98,7 +97,7 @@ module.exports = (robot) ->
 
         url = "#{host}/api/team/#{team}"
 
-        sendRequest robot, url, (people) ->
+        service.sendRequest robot, url, (people) ->
           if people.length == 0
             robot.send "Couldn't find a team with the name \"#{team}\"."
             return
@@ -115,7 +114,7 @@ module.exports = (robot) ->
 
       url = "#{host}/api/people?location=#{location}&role=#{role}"
 
-      sendRequest robot, url, (people) ->
+      service.sendRequest robot, url, (people) ->
         if people.length == 0
           robot.send "I wasn't able to find people in #{location} who are #{role}. :("
           return
@@ -132,7 +131,7 @@ module.exports = (robot) ->
 
       url = "#{host}/api/people?location=#{location}&role=#{role}"
 
-      sendRequest robot, url, (people) ->
+      service.sendRequest robot, url, (people) ->
         if people.length == 0
           robot.send "I wasn't able to find people in #{location} who are #{role}. :("
           return
@@ -168,7 +167,7 @@ module.exports = (robot) ->
         baseUrl = "#{host}/api/person/#{first}"
         url = if last then "#{baseUrl}/#{last}" else baseUrl
 
-        sendRequest robot, url, (person) ->
+        service.sendRequest robot, url, (person) ->
             if person == ""
               robot.send "I couldn't find \"#{personName}\". Maybe I forgot where to find him/her."
               return
@@ -198,7 +197,7 @@ module.exports = (robot) ->
         searchTerm = robot.match[1]
         url = "#{host}/api/people/search?query=#{searchTerm}"
 
-        sendRequest robot, url, (people) ->
+        service.sendRequest robot, url, (people) ->
           if people.length == 0
             robot.send "I was not able to find \"#(searchTerm)\" :("
             return
@@ -221,7 +220,7 @@ module.exports = (robot) ->
 
         url = "#{host}/api/location/#{place}"
 
-        sendRequest robot, url, (people) ->
+        service.sendRequest robot, url, (people) ->
           if people.length == 0
             robot.send "I was not able to find people working at #{place} :("
             return
@@ -232,49 +231,3 @@ module.exports = (robot) ->
             message += "#{person.name} #{person.lastName}. His/her email is #{person.workEmail} and skype is #{person.skype} <skype:#{person.skype}?chat>.  \n"
 
           robot.send message
-
-
-scopedCredentials = success: false
-MAX_RETRIES = 3
-
-sendRequest = (robot, url, cb) ->
-  today = new Date
-  dd = today.getDate()
-  retry = 0
-
-  if !scopedCredentials.success || dd > scopedCredentials.expirationDate
-    if(retry == MAX_RETRIES)
-      return
-
-    peopleApiAuth = require('./config/people_api.json')
-
-    authenticationUrl = "#{host}/api/user/authenticate?user=#{peopleApiAuth.username}&clientId=#{peopleApiAuth.clientId}&secret=#{peopleApiAuth.secret}"
-
-    sendHttpRequest robot, authenticationUrl, {}, (credentials) ->
-      retry += 1
-      scopedCredentials = credentials
-      sendHttpRequest robot, url, {'x-access-token': credentials.token}, (result) ->
-        cb result
-    return
-
-  sendHttpRequest robot, url, {'x-access-token': scopedCredentials.token}, (result) ->
-    cb result
-
-sendHttpRequest = (robot, url, headers, cb) ->
-  robot.http(url)
-    .headers(headers)
-    .get() (err, res, body) ->
-        if !res || res.statusCode != 200
-          statusCode = if res then res.statusCode else 503
-          switch statusCode
-            when 404 then robot.send "404 - Failed to find what you were looking for."
-            when 403
-              console.log("Sorry my credentials expired, find the developer and yell at him/her")
-              scopedCredentials = success: false
-              sendRequest robot, url
-            else robot.send "Something happened while i was asleep, try again later. :(. ErrorCode: #{statusCode}"
-          return
-        if body == ""
-          cb body
-        else
-          cb JSON.parse(body)
