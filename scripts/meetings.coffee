@@ -23,48 +23,27 @@ host = process.env.PEOPLE_API_HOST || "http://localhost:8000"
 service = require('../app/services/service.coffee')
 
 module.exports = (robot) ->
-    robot.respond /rooms/i, (robot) ->
-        url = "#{host}/meeting/api/rooms"
+    robot.respond /rooms( in (.*))?$/, (robot) ->
+        location = robot.match[2];
+        url = "#{host}/api/meeting/rooms"
+        console.log("location:", robot.match)
+        if(location)
+          url = "#{url}/#{location}"
+
 
         service.get robot, url, (rooms) ->
-          console.log(rooms)
+          message = ""
+
           if rooms.length == 0
-            robot.send "I was not able to find any meeting rooms. :("
+            message = "I was not able to find any meeting rooms"
+            if(location)
+              message = "#{message} at #{location}"
+            robot.send "#{message}. :("
             return
 
-          message = ""
+
           for index, room of rooms
               message += "#{room.name} at #{room.location}. \n"
-
-          robot.send message
-
-    robot.respond /rooms (.*)/i, (robot) ->
-        location = robot.match[1]
-        url = "#{host}/api/meeting/rooms/#{location}"
-
-        service.get robot, url, (rooms) ->
-          if rooms.length == 0
-            robot.send "I was not able to find any meeting rooms in #{location}. :("
-            return
-
-          message = ""
-          for index, room of rooms
-              message += "#{room.name}. \n"
-
-          robot.send message
-
-    robot.respond /rooms (.*)/i, (robot) ->
-        location = robot.match[1]
-        url = "#{host}/api/meeting/rooms/#{location}"
-
-        service.get robot, url, (rooms) ->
-          if rooms.length == 0
-            robot.send "I was not able to find any meeting rooms in #{location}. :("
-            return
-
-          message = ""
-          for index, room of rooms
-              message += "#{room.name}. \n"
 
           robot.send message
 

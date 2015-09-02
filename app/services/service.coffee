@@ -7,9 +7,7 @@ service = () ->
 
   get = (robot, url, cb) ->
     authenticate robot, url, (header) ->
-      console.log("robot1: ", robot)
       getRequest robot, url, header, (result) ->
-        console.log("robot2: ",robot)
         cb result
 
   post = (robot, url, data, cb) ->
