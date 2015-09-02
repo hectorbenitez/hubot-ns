@@ -26,6 +26,7 @@ moment = require('moment')
 module.exports = (robot) ->
     robot.respond /rooms( in (.*))?$/, (robot) ->
         console.log(robot.envelope.message.user)
+        console.log(robot.message.user)
         location = robot.match[2];
         url = "#{host}/api/meeting/rooms"
         if(location)
