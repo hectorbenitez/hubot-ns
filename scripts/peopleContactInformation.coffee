@@ -30,7 +30,7 @@ module.exports = (robot) ->
     robot.respond /who works at nearsoft\?/i, (robot) ->
         url = "#{host}/api/people"
 
-        service.sendRequest robot, url, (people) ->
+        service.get robot, url, (people) ->
           if people.length == 0
             robot.send "I was not able to find any people working at nearsoft. :("
             return
@@ -46,7 +46,7 @@ module.exports = (robot) ->
 
       url = "#{host}/api/people/#{skill}"
 
-      sendRequest robot, url, (people) ->
+      service.get robot, url, (people) ->
         if people.length == 0
           robot.send "I wasn't able to find people with #{skill} skill. :("
           return
@@ -63,7 +63,7 @@ module.exports = (robot) ->
 
       url = "#{host}/api/people/#{skill}?location=#{location}"
 
-      service.sendRequest robot, url, (people) ->
+      service.get robot, url, (people) ->
         if people.length == 0
           robot.send "I wasn't able to find people with #{skill} skill at #{location}. :("
           return
@@ -81,7 +81,7 @@ module.exports = (robot) ->
 
       url = "#{host}/api/people/#{skill}?location=#{location}&team=#{team}"
 
-      service.sendRequest robot, url, (people) ->
+      service.get robot, url, (people) ->
         if people.length == 0
           robot.send "I wasn't able to find people with #{skill} skill at #{location} in #{team}. :("
           return
@@ -97,7 +97,7 @@ module.exports = (robot) ->
 
         url = "#{host}/api/team/#{team}"
 
-        service.sendRequest robot, url, (people) ->
+        service.get robot, url, (people) ->
           if people.length == 0
             robot.send "Couldn't find a team with the name \"#{team}\"."
             return
@@ -114,7 +114,7 @@ module.exports = (robot) ->
 
       url = "#{host}/api/people?location=#{location}&role=#{role}"
 
-      service.sendRequest robot, url, (people) ->
+      service.get robot, url, (people) ->
         if people.length == 0
           robot.send "I wasn't able to find people in #{location} who are #{role}. :("
           return

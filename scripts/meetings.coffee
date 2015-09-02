@@ -19,17 +19,15 @@
 #
 # Author:
 #   luis-montealegre
-
-
-
 host = process.env.PEOPLE_API_HOST || "http://localhost:8000"
 service = require('../app/services/service.coffee')
 
 module.exports = (robot) ->
-    robot.respond /bot rooms/i, (robot) ->
+    robot.respond /rooms/i, (robot) ->
         url = "#{host}/meeting/api/rooms"
 
         service.get robot, url, (rooms) ->
+          console.log(rooms)
           if rooms.length == 0
             robot.send "I was not able to find any meeting rooms. :("
             return
@@ -40,8 +38,7 @@ module.exports = (robot) ->
 
           robot.send message
 
-
-    robot.respond /bot rooms (.*)/i, (robot) ->
+    robot.respond /rooms (.*)/i, (robot) ->
         location = robot.match[1]
         url = "#{host}/api/meeting/rooms/#{location}"
 
@@ -56,7 +53,7 @@ module.exports = (robot) ->
 
           robot.send message
 
-    robot.respond /bot rooms (.*)/i, (robot) ->
+    robot.respond /rooms (.*)/i, (robot) ->
         location = robot.match[1]
         url = "#{host}/api/meeting/rooms/#{location}"
 
@@ -71,7 +68,7 @@ module.exports = (robot) ->
 
           robot.send message
 
-    robot.respond /bot organize a meeting in ([-_0-9a-zA-Z\.]+) at (([01]?[0-9]|2[0-3]):[0-5][0-9])/i, (robot) ->
+    robot.respond /organize a meeting in ([-_0-9a-zA-Z\.]+) at (([01]?[0-9]|2[0-3]):[0-5][0-9])/i, (robot) ->
         location = robot.match[1]
         url = "#{host}/api/meeting"
         data = {
@@ -85,7 +82,7 @@ module.exports = (robot) ->
 
           robot.send "done!!"
 
-    robot.respond /bot organize a meeting in ([-_0-9a-zA-Z\.]+) at (\d{4})-(\d{2})-(\d{2}) (([01]?[0-9]|2[0-3]):[0-5][0-9])/i, (robot) ->
+    robot.respond /organize a meeting in ([-_0-9a-zA-Z\.]+) at (\d{4})-(\d{2})-(\d{2}) (([01]?[0-9]|2[0-3]):[0-5][0-9])\?/i, (robot) ->
         location = robot.match[1]
         url = "#{host}/api/rooms/#{location}"
 
@@ -100,7 +97,7 @@ module.exports = (robot) ->
 
           robot.send message
 
-    robot.respond /bot is ([-_0-9a-zA-Z\.]+) available at (([01]?[0-9]|2[0-3]):[0-5][0-9])/i, (robot) ->
+    robot.respond /is ([-_0-9a-zA-Z\.]+) available at (([01]?[0-9]|2[0-3]):[0-5][0-9])\?/i, (robot) ->
         location = robot.match[1]
         url = "#{host}/api/rooms/#{location}"
 
