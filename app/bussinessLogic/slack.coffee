@@ -29,4 +29,4 @@ slackService = (apiKey) ->
     getByEmail
   }
 
-module.exports = slackService()
+module.exports = slackService

@@ -1,4 +1,4 @@
-slack = require("./bussinessLogic/slack.js")
+slack = require("./bussinessLogic/slack.js")(process.env.SLACK_API_KEY)
 calendar = require("./bussinessLogic/calendar.js")
 moment = require("moment")
 
