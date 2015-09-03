@@ -22,6 +22,7 @@
 host = process.env.PEOPLE_API_HOST || "http://localhost:8000"
 service = require('../app/services/service.coffee')
 moment = require('moment')
+time = require('../app/utils/time.coffee')
 
 module.exports = (robot) ->
     robot.respond /rooms( in (.*))?$/, (robot) ->
@@ -51,8 +52,28 @@ module.exports = (robot) ->
 
     robot.respond /organize a meeting in ([-_0-9a-zA-Z\.]+) at (([01]?[0-9]|2[0-3]):[0-5][0-9]) to (([01]?[0-9]|2[0-3]):[0-5][0-9])/i, (robot) ->
         location = robot.match[1]
-        startTime = robot.match[2].split(":")
-        endTime = robot.match[3].split(":")
+        startTime = robot.match[2]
+        endTime = robot.match[3]
+
+        startTime = time.setWithToday(startTime)
+        endTime = time.setWithToday(endTime)
+
+        if startTime
+          robot.send "Sorry, your meeting start time seems to be invalid"
+          return
+
+        if endTime
+          robot.send "Sorry, your ending time seems to be invalid"
+          return
+
+        if moment(startTime) > moment(endTime)
+          robot.send "Sorry, start time of the meeting cannot be less than the ending time"
+          return
+
+        if moment(moment.format()) < moment(startTime)
+          robot.send "Sorry, start time of a meeting cannot be less than today's date"
+          return
+
 
         url = "#{host}/api/meeting"
 
@@ -60,8 +81,8 @@ module.exports = (robot) ->
 
         data = {
           organizer: robot.message.user.email,
-          startTime: moment.format(),
-          endTime: moment.format().add(1, 'hour')
+          startTime: startTime,
+          endTime: endTime
         }
 
         service.post robot, url, data, (meeting) ->
