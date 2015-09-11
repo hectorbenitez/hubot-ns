@@ -11,7 +11,7 @@ service = () ->
         cb result
 
   post = (robot, url, data, cb) ->
-    authenticate robot, url, cb, (header) ->
+    authenticate robot, url, (header) ->
       postRequest robot, url, header, data, (result) ->
         cb result
 
@@ -39,6 +39,7 @@ service = () ->
           cb result
 
   postRequest = (robot, url, headers, data, cb) ->
+    console.log(url)
     robot.http(url)
       .headers(headers)
       .post(data) (err, res, body) ->
@@ -47,7 +48,6 @@ service = () ->
           cb result
 
   parseResult = (err, res, body, robot) ->
-    console.log(err)
     if !res || res.statusCode != 200
       statusCode = if res then res.statusCode else 503
       switch statusCode

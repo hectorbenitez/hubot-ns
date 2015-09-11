@@ -1,5 +1,5 @@
 request = require('request')
-_ = require('_')
+_ = require('underscore')
 
 slackService = (apiKey) ->
   host = 'https://slack.com/api';
@@ -7,9 +7,8 @@ slackService = (apiKey) ->
   getAll = (cb) ->
     url = "#{host}/users.list?token=#{apiKey}"
     request.get url, (error, response, body) ->
-      if(error){
+      if error
         cb error
-      }
 
       response = JSON.parse(body)
       cb response.members
@@ -24,9 +23,19 @@ slackService = (apiKey) ->
       else
         cb null
 
+  getById = (id, cb) ->
+    url = "#{host}/users.info?user=#{id}&token=#{apiKey}"
+    request.get url, (error, response, body) ->
+      if error
+        cb error
+
+      response = JSON.parse(body)
+      cb response.user
+
   return {
     getAll: getAll
-    getByEmail
+    getByEmail: getByEmail
+    getById: getById
   }
 
 module.exports = slackService

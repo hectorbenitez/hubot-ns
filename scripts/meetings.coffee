@@ -8,11 +8,8 @@
 # Commands:
 #   bot rooms - A list of all meeting rooms
 #   bot rooms in <location> -  Meeting rooms in a specific location
-#   bot organize a meeting in <room_name> at <time>
-#   bot organize a meeting in <room_name> at <date> <time>
+#   bot organize a meeting in <room_name> from <time> to <time>
 #   bot is <room_name> available at <time>?
-#   bot is <room_name> avialable at <date> <time>?
-#   bot is <room_name> available from <date> to <date>?
 #
 #Notes:
 #   None
@@ -20,14 +17,15 @@
 # Author:
 #   luis-montealegre
 host = process.env.PEOPLE_API_HOST || "http://localhost:8000"
+slackApiKey = process.env.SLACK_API_KEY || "<your_api_key_here>";
+
 service = require('../app/services/service.coffee')
-moment = require('moment')
+slack = require('../app/bussinessLogic/slack.coffee')(slackApiKey)
 time = require('../app/utils/time.coffee')
+moment = require('moment')
 
 module.exports = (robot) ->
     robot.respond /rooms( in (.*))?$/, (robot) ->
-        console.log(robot.envelope.message.user)
-        console.log(robot.message.user)
         location = robot.match[2];
         url = "#{host}/api/meeting/rooms"
         if(location)
@@ -55,69 +53,73 @@ module.exports = (robot) ->
         startTime = robot.match[2]
         endTime = robot.match[3]
 
-        startTime = time.setWithToday(startTime)
-        endTime = time.setWithToday(endTime)
-
-        if startTime
-          robot.send "Sorry, your meeting start time seems to be invalid"
-          return
-
-        if endTime
-          robot.send "Sorry, your ending time seems to be invalid"
-          return
-
-        if moment(startTime) > moment(endTime)
-          robot.send "Sorry, start time of the meeting cannot be less than the ending time"
-          return
-
-        if moment(moment.format()) < moment(startTime)
-          robot.send "Sorry, start time of a meeting cannot be less than today's date"
-          return
-
-
-        url = "#{host}/api/meeting"
-
-        date = moment.format()
-
-        data = {
-          organizer: robot.message.user.email,
-          startTime: startTime,
-          endTime: endTime
-        }
-
-        service.post robot, url, data, (meeting) ->
-          if meeting
-            robot.send "I was not able to schedule your meeting in #{location}. :("
+        slack.getById robot.envelope.message.id, (user) ->
+          if !user
+            robot.send "I wasn't able to find you! Please help!"
             return
 
-          robot.send "done!!"
+          startTime = time.setWithToday(startTime, user.tz)
+          endTime = time.setWithToday(endTime, user.tz)
 
-    robot.respond /organize a meeting in ([-_0-9a-zA-Z\.]+) at (\d{4})-(\d{2})-(\d{2}) (([01]?[0-9]|2[0-3]):[0-5][0-9])/i, (robot) ->
-        location = robot.match[1]
-        url = "#{host}/api/rooms/#{location}"
-
-        service.post robot, url, (rooms) ->
-          if rooms.length == 0
-            robot.send "I was not able to find any meeting rooms in #{location}. :("
+          if startTime
+            robot.send "Sorry, your meeting start time seems to be invalid"
             return
 
-          message = ""
-          for index, room of rooms
-              message += "#{room.name}. \n"
+          if endTime
+            robot.send "Sorry, your ending time seems to be invalid"
+            return
 
-          robot.send message
+          if moment(startTime) > moment(endTime)
+            robot.send "Sorry, start time of the meeting cannot be less than the ending time"
+            return
+
+          if moment(moment.format()) < moment(startTime)
+            robot.send "Sorry, start time of a meeting cannot be less than today's date"
+            return
+
+
+          url = "#{host}/api/meeting"
+
+          date = moment.format()
+
+          data = {
+            organizer: robot.message.user.email
+            startTime: startTime
+            endTime: endTime
+          }
+
+          service.post robot, url, data, (meeting) ->
+            if meeting
+              robot.send "I was not able to schedule your meeting in #{location}. :("
+              return
+
+            robot.send "Done!! Your meeting is setup!"
 
     robot.respond /is ([-_0-9a-zA-Z\.]+) available at (([01]?[0-9]|2[0-3]):[0-5][0-9])/i, (robot) ->
-        location = robot.match[1]
-        url = "#{host}/api/rooms/#{location}"
+        room = robot.match[1]
+        startTime = robot.match[2]
 
-        service.post robot, url, (rooms) ->
-          if rooms.length == 0
-            robot.send "I was not able to find any meeting rooms in #{location}. :("
+
+        slack.getById "U09MFSL2H", (user) ->
+          if !user
+            robot.send "I wasn't able to find you! Please help!"
             return
 
-          message = ""
-          for index, room of rooms
-              message += "#{room.name}. \n"
+          formattedISOTime = time.setWithToday(startTime, user.tz)
 
-          robot.send message
+          data = {
+            startTime: formattedISOTime,
+          }
+
+          if !moment(formattedISOTime).isValid()
+            robot.send "Sorry, I'm not able to handle that date. Try with 3:00, 3pm, 4:00 or a complicated ISO date"
+            return
+
+          url = "#{host}/api/meeting/rooms/#{room}/available?startTime=#{formattedISOTime}"
+
+          service.get robot, url, (event) ->
+            if event.isBusy
+              robot.send "Hey, that room is busy at that time. You might want to use later"
+              return
+
+            robot.send "#{room} is free at #{startTime}. Schedule a meeting before they take it!"
