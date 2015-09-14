@@ -22,7 +22,7 @@ slackApiKey = process.env.SLACK_API_KEY || "<your_api_key_here>";
 service = require('../app/services/service.coffee')
 slack = require('../app/bussinessLogic/slack.coffee')(slackApiKey)
 time = require('../app/utils/time.coffee')
-moment = require('moment')
+moment = require('moment-timezone')
 
 module.exports = (robot) ->
     robot.respond /rooms( in (.*))?$/, (robot) ->
@@ -48,18 +48,20 @@ module.exports = (robot) ->
 
           robot.send message
 
-    robot.respond /organize a meeting in ([-_0-9a-zA-Z\.]+) at (([01]?[0-9]|2[0-3]):[0-5][0-9]) to (([01]?[0-9]|2[0-3]):[0-5][0-9])/i, (robot) ->
+    robot.respond /organize a meeting in ([-_0-9a-zA-Z\.]+) at (([01]?[0-9]|2[0-3]):[0-5][0-9]) to (([01]?[0-9]|2[0-3]):[0-5][0-9]) about (.*)/i, (robot) ->
         location = robot.match[1]
         startTime = robot.match[2]
         endTime = robot.match[3]
+        summary = robot.match[4]
 
-        slack.getById robot.envelope.message.id, (user) ->
+        slack.getById robot.message.user.id, (user) ->
           if !user
             robot.send "I wasn't able to find you! Please help!"
             return
 
           startTime = time.setWithToday(startTime, user.tz)
           endTime = time.setWithToday(endTime, user.tz)
+          date = moment.tz(user.tz).format()
 
           if startTime
             robot.send "Sorry, your meeting start time seems to be invalid"
@@ -69,23 +71,22 @@ module.exports = (robot) ->
             robot.send "Sorry, your ending time seems to be invalid"
             return
 
-          if moment(startTime) > moment(endTime)
+          if moment(startTime).isAfter(date)
             robot.send "Sorry, start time of the meeting cannot be less than the ending time"
             return
 
-          if moment(moment.format()) < moment(startTime)
-            robot.send "Sorry, start time of a meeting cannot be less than today's date"
+          if  moment(endTime).isAfter(date)
+            robot.send "Sorry, end time of a meeting cannot be less than today's date"
             return
 
 
           url = "#{host}/api/meeting"
 
-          date = moment.format()
-
           data = {
             organizer: robot.message.user.email
             startTime: startTime
             endTime: endTime
+            summary: summary
           }
 
           service.post robot, url, data, (meeting) ->
@@ -99,10 +100,9 @@ module.exports = (robot) ->
         room = robot.match[1]
         startTime = robot.match[2]
 
-
-        slack.getById "U09MFSL2H", (user) ->
+        slack.getById robot.message.user.id, (user) ->
           if !user
-            robot.send "I wasn't able to find you! Please help!"
+            robot.send "Sorry, I was not able to find you in the slack directory. :("
             return
 
           formattedISOTime = time.setWithToday(startTime, user.tz)
