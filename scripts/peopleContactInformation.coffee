@@ -16,6 +16,7 @@
 #   bot who works with <skill> at <location> in <team>? - Returns a list of people with the specified skill in a certain location and team
 #   bot who's in <location> and is a <role>? - Returns a list of people in a certain location with the specified role
 #   bot who's in <location> in <team>? - Returns a list of people in a certain location with the specified team
+#
 # Notes:
 #   None
 #
@@ -131,7 +132,7 @@ module.exports = (robot) ->
 
       url = "#{host}/api/people?location=#{location}&role=#{role}"
 
-      service.sendRequest robot, url, (people) ->
+      service.get robot, url, (people) ->
         if people.length == 0
           robot.send "I wasn't able to find people in #{location} who are #{role}. :("
           return
@@ -148,7 +149,7 @@ module.exports = (robot) ->
 
       url = "#{host}/api/people?location=#{location}&team=#{team}"
 
-      sendRequest robot, url, (people) ->
+      service.get robot, url, (people) ->
         if people.length == 0
           robot.send "I wasn't able to find people in #{location} in #{team}. :("
           return
@@ -167,7 +168,7 @@ module.exports = (robot) ->
         baseUrl = "#{host}/api/person/#{first}"
         url = if last then "#{baseUrl}/#{last}" else baseUrl
 
-        service.sendRequest robot, url, (person) ->
+        service.get robot, url, (person) ->
             if person == ""
               robot.send "I couldn't find \"#{personName}\". Maybe I forgot where to find him/her."
               return
@@ -184,12 +185,14 @@ module.exports = (robot) ->
 
             message += "Email: #{person.workEmail}. Skype: #{person.skype} <skype:#{person.skype}?chat>. \n"
 
-            switch person.role
-              when "Developer" then message += "Likes to code in #{location}."
-              when "IT Support" then message += "Enjoys denying pretty things to people in #{location}."
-              when "Intern" then message += "Likes to be called an \"Intern\". ¯\\_(ツ)_/¯"
-              when person.role.toLowerCase().indexOf("test") > -1 then  message += "Likes to test and break things developer do (or not)."
-              else  message += "Saves the world in their free time and read some books."
+            message += "Location: #{location}."
+
+            # switch person.role
+            #   when "Developer" then message += "Likes to code in #{location}."
+            #   when "IT Support" then message += "Enjoys denying pretty things to people in #{location}."
+            #   when "Intern" then message += "Likes to be called an \"Intern\". ¯\\_(ツ)_/¯"
+            #   when person.role.toLowerCase().indexOf("test") > -1 then  message += "Likes to test and break things developer do (or not)."
+            #   else  message += "Saves the world in their free time and read some books."
 
             robot.send message
 
@@ -197,7 +200,7 @@ module.exports = (robot) ->
         searchTerm = robot.match[1]
         url = "#{host}/api/people/search?query=#{searchTerm}"
 
-        service.sendRequest robot, url, (people) ->
+        service.get robot, url, (people) ->
           if people.length == 0
             robot.send "I was not able to find \"#(searchTerm)\" :("
             return
@@ -208,6 +211,8 @@ module.exports = (robot) ->
             message += "#{person.role}: #{person.name} #{person.lastName}. Working at #{person.location}. His/her email is #{person.workEmail} and skype is #{person.skype} <skype:#{person.skype}?chat>.\n"
 
           robot.send message
+
+
 
     robot.respond /who's at ([-_0-9a-zA-Z\.]+)\?/i, (robot) ->
         my_place = robot.match[1];
@@ -220,7 +225,7 @@ module.exports = (robot) ->
 
         url = "#{host}/api/location/#{place}"
 
-        service.sendRequest robot, url, (people) ->
+        service.get robot, url, (people) ->
           if people.length == 0
             robot.send "I was not able to find people working at #{place} :("
             return
