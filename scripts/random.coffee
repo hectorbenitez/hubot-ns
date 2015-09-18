@@ -6,9 +6,6 @@
 #
 #
 # Commands:
-#   bot cual es la respuesta a la vida, el universo y todo lo demas? - La respuesta
-#   bot what's the answer to life, the universe and everything? - The ultimate answer
-#   bot que piensa el mike de <algo> - Quieres saber que piensa Mike acerca de tu tema?
 #
 # Notes:
 #   None
