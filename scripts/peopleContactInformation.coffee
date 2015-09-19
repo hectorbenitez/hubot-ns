@@ -202,7 +202,7 @@ module.exports = (robot) ->
 
         service.get robot, url, (people) ->
           if people.length == 0
-            robot.send "I was not able to find \"#(searchTerm)\" :("
+            robot.send "I was not able to find \"#{searchTerm}\" :("
             return
 
           if people.length == 1
