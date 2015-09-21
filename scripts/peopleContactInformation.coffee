@@ -211,7 +211,7 @@ module.exports = (robot) ->
             message = "I found #{people.length} people: \n"
 
           for index, person of people
-            message += "#{person.role}: #{person.name} #{person.lastName}. Working at #{person.location}. His/her email is #{person.workEmail} and skype is #{person.skype} <skype:#{person.skype}?chat>.\n"
+            message += "#{person.role}: #{person.name} #{person.lastName}. Team: #{person.team}. Working at #{person.location}. His/her email is #{person.workEmail} and skype is #{person.skype} <skype:#{person.skype}?chat>.\n "
 
           robot.send message
 

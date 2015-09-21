@@ -27,8 +27,8 @@ service = () ->
         scopedCredentials = credentials
         cb {'x-access-token': scopedCredentials.token}
         return
-
-    cb {'x-access-token': scopedCredentials.token}
+    else
+      cb {'x-access-token': scopedCredentials.token}
 
   getRequest = (robot, url, headers, cb) ->
     robot.http(url)
