@@ -42,13 +42,13 @@ module.exports = (robot) ->
 
           robot.send message
 
-    robot.respond /who works with ([-_0-9a-zA-Z\.]+)\?/i, (robot) ->
+    robot.respond /who works with ([-_0-9a-zA-Z\.\#\+]+)\?/i, (robot) ->
       skill = robot.match[1]
 
       url = "#{host}/api/people/#{skill}"
 
       service.get robot, url, (people) ->
-        if people.length == 0
+        if !people || people.length == 0
           robot.send "I wasn't able to find people with #{skill} skill. :("
           return
 
@@ -58,14 +58,14 @@ module.exports = (robot) ->
 
         robot.send message
 
-    robot.respond /who works with ([-_0-9a-zA-Z\.]+) at ([-_0-9a-zA-Z\.]+)\?/i, (robot) ->
+    robot.respond /who works with ([-_0-9a-zA-Z\.#]+) at ([-_0-9a-zA-Z\.]+)\?/i, (robot) ->
       skill = robot.match[1]
       location = robot.match[2]
 
       url = "#{host}/api/people/#{skill}?location=#{location}"
 
       service.get robot, url, (people) ->
-        if people.length == 0
+        if !people || people.length == 0
           robot.send "I wasn't able to find people with #{skill} skill at #{location}. :("
           return
 
@@ -75,7 +75,7 @@ module.exports = (robot) ->
 
         robot.send message
 
-    robot.respond /who works with ([-_0-9a-zA-Z\.]+) at ([-_0-9a-zA-Z\.]+) in ([-_0-9a-zA-Z\.]+)\?/i, (robot) ->
+    robot.respond /who works with ([-_0-9a-zA-Z\.#]+) at ([-_0-9a-zA-Z\.]+) in ([-_0-9a-zA-Z\.]+)\?/i, (robot) ->
       skill = robot.match[1]
       location = robot.match[2]
       team = robot.match[3]
@@ -83,7 +83,7 @@ module.exports = (robot) ->
       url = "#{host}/api/people/#{skill}?location=#{location}&team=#{team}"
 
       service.get robot, url, (people) ->
-        if people.length == 0
+        if !people || people.length == 0
           robot.send "I wasn't able to find people with #{skill} skill at #{location} in #{team}. :("
           return
 
