@@ -34,18 +34,14 @@ service = () ->
     robot.http(url)
       .headers(headers)
       .get() (err, res, body) ->
-        result = parseResult(err, res, body, robot)
-        if(result)
-          cb result
+        cb parseResult(err, res, body, robot)
 
   postRequest = (robot, url, headers, data, cb) ->
     console.log(url)
     robot.http(url)
       .headers(headers)
       .post(data) (err, res, body) ->
-        result = parseResult(err, res, body, robot)
-        if(result)
-          cb result
+        cb parseResult(err, res, body, robot)
 
   parseResult = (err, res, body, robot) ->
     if !res || res.statusCode != 200

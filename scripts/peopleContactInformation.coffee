@@ -169,8 +169,9 @@ module.exports = (robot) ->
         url = if last then "#{baseUrl}/#{last}" else baseUrl
 
         service.get robot, url, (person) ->
+            console.log(person)
             if person == ""
-              robot.send "I couldn't find \"#{personName}\". Maybe I forgot where to find him/her."
+              robot.send "I couldn't find #{personName}."
               return
 
             location = ""
