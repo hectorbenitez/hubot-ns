@@ -14,8 +14,8 @@
 #   bot who works with <skill>? - Returns a list of people with the specified skill
 #   bot who works with <skill> at <location>? - Returns a list of people with the specified skill in a certain location
 #   bot who works with <skill> at <location> in <team>? - Returns a list of people with the specified skill in a certain location and team
-#   bot who's in <location> and is a <role>? - Returns a list of people in a certain location with the specified role
-#   bot who's in <location> in <team>? - Returns a list of people in a certain location with the specified team
+#   bot who's at <location> and is a <role>? - Returns a list of people in a certain location with the specified role
+#   bot who's at <location> in <team>? - Returns a list of people in a certain location with the specified team
 #
 # Notes:
 #   None
@@ -93,8 +93,8 @@ module.exports = (robot) ->
 
         robot.send message
 
-    robot.respond /who's in (.*)\?/i, (robot) ->
-        team = (robot.match[1].split(' ').map (word) -> word[0].toUpperCase() + word[1..-1].toLowerCase()).join ' '
+    robot.respond /who(\’|\')s in (.*)\?/i, (robot) ->
+        team = robot.match[2]
 
         url = "#{host}/api/team/#{team}"
 
@@ -109,9 +109,42 @@ module.exports = (robot) ->
 
           robot.send message
 
-    robot.respond /who's at ([-_0-9a-zA-Z\.]+) and is a (.*)\?/i, (robot) ->
-      location = robot.match[1]
+    robot.respond /who(\’|\')s a (.*)\?/i, (robot) ->
       role = robot.match[2]
+
+      url = "#{host}/api/people?role=#{role}"
+
+      service.get robot, url, (people) ->
+        if people.length == 0
+          robot.send "I wasn't able to find people with #{role} role. :("
+          return
+
+        message = ""
+        for index, person of people
+            message += "#{person.name} #{person.lastName}. Email: #{person.workEmail}. Skype: #{person.skype} <skype:#{person.skype}?chat>.\n"
+
+        robot.send message
+
+    robot.respond /who(\’|\')s at ([-_0-9a-zA-Z\.]+) and is a (.*)\?/i, (robot) ->
+      location = robot.match[2]
+      role = robot.match[3]
+
+      url = "#{host}/api/people?location=#{location}&role=#{role}"
+
+      service.get robot, url, (people) ->
+        if people.length == 0
+          robot.send "I wasn't able to find people in #{location} with #{role} role. :("
+          return
+
+        message = ""
+        for index, person of people
+            message += "#{person.name} #{person.lastName}. Email: #{person.workEmail}. Skype: #{person.skype} <skype:#{person.skype}?chat>.\n"
+
+        robot.send message
+
+    robot.respond /who(\’|\')s at ([-_0-9a-zA-Z\.]+) and is a (.*)\?/i, (robot) ->
+      location = robot.match[2]
+      role = robot.match[3]
 
       url = "#{host}/api/people?location=#{location}&role=#{role}"
 
@@ -126,26 +159,9 @@ module.exports = (robot) ->
 
         robot.send message
 
-    robot.respond /who's at ([-_0-9a-zA-Z\.]+) and is a (.*)\?/i, (robot) ->
-      location = robot.match[1]
-      role = robot.match[2]
-
-      url = "#{host}/api/people?location=#{location}&role=#{role}"
-
-      service.get robot, url, (people) ->
-        if people.length == 0
-          robot.send "I wasn't able to find people in #{location} who are #{role}. :("
-          return
-
-        message = ""
-        for index, person of people
-            message += "#{person.name} #{person.lastName}. Email: #{person.workEmail}. Skype: #{person.skype} <skype:#{person.skype}?chat>.\n"
-
-        robot.send message
-
-    robot.respond /who's at ([-_0-9a-zA-Z\.]+) in (.*)\?/i, (robot) ->
-      location = robot.match[1]
-      team = robot.match[2]
+    robot.respond /who(\’|\')s at ([-_0-9a-zA-Z\.]+) in (.*)\?/i, (robot) ->
+      location = robot.match[2]
+      team = robot.match[3]
 
       url = "#{host}/api/people?location=#{location}&team=#{team}"
 
@@ -161,7 +177,7 @@ module.exports = (robot) ->
         robot.send message
 
     robot.respond /tell me about (.*)/i, (robot) ->
-        personName = (robot.match[1].split(' ').map (word) -> word[0].toUpperCase() + word[1..-1].toLowerCase()).join ' '
+        personName = robot.match[1]
 
         [first, last] = personName.split(" ")
 
@@ -169,7 +185,7 @@ module.exports = (robot) ->
         url = if last then "#{baseUrl}/#{last}" else baseUrl
 
         service.get robot, url, (person) ->
-            console.log(person)
+
             if person == ""
               robot.send "I couldn't find #{personName}."
               return
@@ -182,11 +198,14 @@ module.exports = (robot) ->
               when "DF" then  location = "DF"
               else  location = "somewhere in the earth."
 
-            message = "His/her fullname is: #{person.name} #{person.lastName}. \n"
+            message = "Fullname is: #{person.name} #{person.lastName}. \n"
 
             message += "Email: #{person.workEmail}. Skype: #{person.skype} <skype:#{person.skype}?chat>. \n"
 
-            message += "Location: #{location}."
+            message += "Location: #{location}. \n"
+
+            if person.skills
+              message += "Skills: " + person.skills.join(", ")
 
             # switch person.role
             #   when "Developer" then message += "Likes to code in #{location}."
@@ -212,14 +231,14 @@ module.exports = (robot) ->
             message = "I found #{people.length} people: \n"
 
           for index, person of people
-            message += "#{person.role}: #{person.name} #{person.lastName}. Team: #{person.team}. Working at #{person.location}. His/her email is #{person.workEmail} and skype is #{person.skype} <skype:#{person.skype}?chat>.\n "
+            message += "#{person.role}: #{person.name} #{person.lastName}.\n Team: #{person.team}. Working at #{person.location}.\n Email: #{person.workEmail}. Skype: #{person.skype} <skype:#{person.skype}?chat>. \n ___________________ \n"
 
           robot.send message
 
 
 
-    robot.respond /who's at ([-_0-9a-zA-Z\.]+)\?/i, (robot) ->
-        my_place = robot.match[1];
+    robot.respond /who(\’|\')s at ([-_0-9a-zA-Z\.]+)\?/i, (robot) ->
+        my_place = robot.match[2];
         place = my_place
         switch my_place.toLowerCase()
           when "someplace" || "otro" then place = "Other"
